@@ -60,49 +60,95 @@ function Tag({ text, color = O }) {
 
 /* PILLAR 1 */
 function DealFinderPanel() {
-  const [city, setCity] = useState("Phoenix, AZ");
-  const [filter, setFilter] = useState("all");
-  const [maxPrice, setMaxPrice] = useState(300000);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
+  const [signal, setSignal] = useState("all");
+  const [f, setF] = useState({
+    city: "Phoenix, AZ", zip: "",
+    minPrice: 0, maxPrice: 500000,
+    minBeds: 0, maxBeds: 10,
+    minBaths: 0, maxBaths: 10,
+    minSqft: 0, maxSqft: 10000,
+    propType: "all", condition: "all",
+  });
+  const sf = (k, v) => setF(p => ({ ...p, [k]: v }));
 
   const allProps = [
-    { address: "4821 W McDowell Rd", price: 185000, arv: 295000, rehab: 45000, score: 87, beds: 3, baths: 2, sqft: 1420, type: "absentee", signal: "Absentee Owner", dom: 47 },
-    { address: "1103 E Van Buren St", price: 172000, arv: 310000, rehab: 78000, score: 74, beds: 4, baths: 2, sqft: 1780, type: "distressed", signal: "Distressed Property", dom: 112 },
-    { address: "7302 N 19th Ave", price: 155000, arv: 248000, rehab: 38000, score: 91, beds: 3, baths: 1, sqft: 1250, type: "foreclosure", signal: "Foreclosure Signal", dom: 19 },
-    { address: "2914 S Mill Ave", price: 272000, arv: 410000, rehab: 55000, score: 79, beds: 4, baths: 3, sqft: 2100, type: "appreciation", signal: "Market Appreciation", dom: 8 },
-    { address: "8851 E Thomas Rd", price: 198000, arv: 320000, rehab: 42000, score: 83, beds: 3, baths: 2, sqft: 1560, type: "absentee", signal: "Absentee Owner", dom: 63 },
-    { address: "3341 W Camelback Rd", price: 289000, arv: 445000, rehab: 67000, score: 76, beds: 5, baths: 3, sqft: 2380, type: "foreclosure", signal: "Foreclosure Signal", dom: 31 },
+    { address: "4821 W McDowell Rd", zip: "85035", price: 185000, arv: 295000, rehab: 45000, score: 87, beds: 3, baths: 2, sqft: 1420, propType: "sfr", condition: "fair", signal: "absentee", signalLabel: "Absentee Owner", dom: 47 },
+    { address: "1103 E Van Buren St", zip: "85006", price: 172000, arv: 310000, rehab: 78000, score: 74, beds: 4, baths: 2, sqft: 1780, propType: "sfr", condition: "poor", signal: "distressed", signalLabel: "Distressed Property", dom: 112 },
+    { address: "7302 N 19th Ave", zip: "85015", price: 155000, arv: 248000, rehab: 38000, score: 91, beds: 3, baths: 1, sqft: 1250, propType: "sfr", condition: "fair", signal: "foreclosure", signalLabel: "Foreclosure Signal", dom: 19 },
+    { address: "2914 S Mill Ave", zip: "85282", price: 272000, arv: 410000, rehab: 55000, score: 79, beds: 4, baths: 3, sqft: 2100, propType: "multi", condition: "good", signal: "appreciation", signalLabel: "Market Appreciation", dom: 8 },
+    { address: "8851 E Thomas Rd", zip: "85251", price: 198000, arv: 320000, rehab: 42000, score: 83, beds: 3, baths: 2, sqft: 1560, propType: "sfr", condition: "fair", signal: "absentee", signalLabel: "Absentee Owner", dom: 63 },
+    { address: "3341 W Camelback Rd", zip: "85017", price: 289000, arv: 445000, rehab: 67000, score: 76, beds: 5, baths: 3, sqft: 2380, propType: "sfr", condition: "good", signal: "foreclosure", signalLabel: "Foreclosure Signal", dom: 31 },
+    { address: "1204 E Indian School Rd", zip: "85014", price: 145000, arv: 230000, rehab: 32000, score: 88, beds: 2, baths: 1, sqft: 980, propType: "condo", condition: "fair", signal: "distressed", signalLabel: "Distressed Property", dom: 88 },
+    { address: "5610 N 7th St #204", zip: "85014", price: 165000, arv: 260000, rehab: 28000, score: 82, beds: 2, baths: 2, sqft: 1100, propType: "condo", condition: "good", signal: "absentee", signalLabel: "Absentee Owner", dom: 44 },
+    { address: "921 W Glendale Ave", zip: "85021", price: 310000, arv: 480000, rehab: 85000, score: 71, beds: 4, baths: 2, sqft: 2200, propType: "multi", condition: "poor", signal: "distressed", signalLabel: "Distressed Property", dom: 135 },
+    { address: "3802 E Thunderbird Rd", zip: "85032", price: 225000, arv: 355000, rehab: 48000, score: 85, beds: 3, baths: 2, sqft: 1680, propType: "townhouse", condition: "fair", signal: "foreclosure", signalLabel: "Foreclosure Signal", dom: 22 },
+    { address: "7011 S Central Ave", zip: "85040", price: 138000, arv: 218000, rehab: 35000, score: 89, beds: 3, baths: 1, sqft: 1150, propType: "sfr", condition: "poor", signal: "foreclosure", signalLabel: "Foreclosure Signal", dom: 67 },
+    { address: "2233 W Dunlap Ave", zip: "85021", price: 195000, arv: 305000, rehab: 40000, score: 80, beds: 3, baths: 2, sqft: 1490, propType: "townhouse", condition: "fair", signal: "appreciation", signalLabel: "Market Appreciation", dom: 14 },
   ];
 
-  const scan = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setResults(allProps.filter(p => p.price <= maxPrice && (filter === "all" || p.type === filter)));
-      setLoading(false);
-    }, 1600);
-  };
-
   const signalColors = { absentee: "#60a5fa", distressed: "#f87171", foreclosure: "#fb923c", appreciation: "#34d399" };
-  const filters = [
+  const signals = [
     { key: "all", label: "All Signals" },
-    { key: "absentee", label: "👤 Absentee Owners" },
+    { key: "absentee", label: "👤 Absentee" },
     { key: "distressed", label: "🏚 Distressed" },
     { key: "foreclosure", label: "⚠️ Foreclosure" },
     { key: "appreciation", label: "📈 Appreciation" },
   ];
+  const propTypes = [
+    { key: "all", label: "All Types" },
+    { key: "sfr", label: "🏠 SFR" },
+    { key: "multi", label: "🏢 Multi-Family" },
+    { key: "condo", label: "🏙 Condo" },
+    { key: "townhouse", label: "🏘 Townhouse" },
+  ];
+  const conditions = [
+    { key: "all", label: "Any Condition" },
+    { key: "good", label: "✅ Good" },
+    { key: "fair", label: "🟡 Fair" },
+    { key: "poor", label: "🔴 Poor" },
+  ];
+  const conditionColors = { good: "#22c55e", fair: "#f59e0b", poor: "#ef4444" };
+
+  const scan = () => {
+    setLoading(true);
+    setTimeout(() => {
+      let filtered = allProps.filter(p =>
+        (signal === "all" || p.signal === signal) &&
+        (f.zip === "" || p.zip.includes(f.zip)) &&
+        p.price >= f.minPrice && p.price <= f.maxPrice &&
+        p.beds >= f.minBeds && p.beds <= f.maxBeds &&
+        p.baths >= f.minBaths && p.baths <= f.maxBaths &&
+        p.sqft >= f.minSqft && p.sqft <= f.maxSqft &&
+        (f.propType === "all" || p.propType === f.propType) &&
+        (f.condition === "all" || p.condition === f.condition)
+      );
+      filtered = filtered.sort((a, b) => b.score - a.score);
+      setResults(filtered);
+      setLoading(false);
+    }, 1600);
+  };
+
+  const resetFilters = () => {
+    setF({ city: "Phoenix, AZ", zip: "", minPrice: 0, maxPrice: 500000, minBeds: 0, maxBeds: 10, minBaths: 0, maxBaths: 10, minSqft: 0, maxSqft: 10000, propType: "all", condition: "all" });
+    setSignal("all");
+    setResults(null);
+  };
 
   return (
     <div>
       <p style={{ color: "#888", fontSize: 13, lineHeight: 1.7, marginBottom: 20 }}>
-        The system scans <strong style={{ color: O }}>millions of properties</strong> and identifies opportunities based on profitability signals — doing in seconds what would take a human analyst weeks to accomplish manually.
+        Our AI-powered deal discovery engine scans <strong style={{ color: O }}>millions of properties</strong> and market data points to identify the most promising real estate investment opportunities. Using advanced algorithms that detect profitability signals, market inefficiencies, and value gaps, it performs in seconds what would normally take a team of analysts weeks to uncover — saving you time, eliminating guesswork, and helping you focus only on deals with real potential.
       </p>
+
+      {/* Signal Cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))", gap: 10, marginBottom: 22 }}>
         {[
-          { icon: "👤", title: "Absentee Owners", desc: "Properties where owners are not occupying the home — a strong signal of seller motivation and deal potential.", color: "#60a5fa" },
-          { icon: "🏚", title: "Distressed Properties", desc: "Flags deferred maintenance, financial difficulty — prime acquisition targets for investors.", color: "#f87171" },
-          { icon: "⚠️", title: "Foreclosure Signals", desc: "Detects early-stage foreclosure activity, giving investors a first-mover advantage before properties hit the open market.", color: "#fb923c" },
-          { icon: "📈", title: "Market Appreciation Trends", desc: "Analyzes long-term ownership patterns and neighborhood appreciation trends to identify high-upside opportunities.", color: "#34d399" },
+          { icon: "👤", title: "Absentee Owners", desc: "Properties where owners are not occupying the home — a strong signal of seller motivation.", color: "#60a5fa" },
+          { icon: "🏚", title: "Distressed Properties", desc: "Flags deferred maintenance, financial difficulty — prime acquisition targets.", color: "#f87171" },
+          { icon: "⚠️", title: "Foreclosure Signals", desc: "Detects early-stage foreclosure activity before properties hit the open market.", color: "#fb923c" },
+          { icon: "📈", title: "Market Appreciation", desc: "Analyzes neighborhood appreciation trends to identify high-upside opportunities.", color: "#34d399" },
         ].map(s => (
           <div key={s.title} style={{ ...dCard, borderLeft: `3px solid ${s.color}` }}>
             <div style={{ fontSize: 20, marginBottom: 6 }}>{s.icon}</div>
@@ -111,51 +157,160 @@ function DealFinderPanel() {
           </div>
         ))}
       </div>
+
+      {/* Main Search Bar */}
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 14 }}>
-        <div style={{ flex: 2, minWidth: 180 }}>
-          <label style={lbl}>Target Market</label>
-          <input value={city} onChange={e => setCity(e.target.value)} style={inp} />
+        <div style={{ flex: 3, minWidth: 180 }}>
+          <label style={lbl}>Target Market / City</label>
+          <input value={f.city} onChange={e => sf("city", e.target.value)} style={inp} placeholder="Phoenix, AZ" />
         </div>
-        <div style={{ flex: 1, minWidth: 160 }}>
-          <label style={lbl}>Max Purchase Price ($)</label>
-          <input type="number" value={maxPrice} onChange={e => setMaxPrice(+e.target.value)} style={inp} />
+        <div style={{ flex: 1, minWidth: 120 }}>
+          <label style={lbl}>Zip Code</label>
+          <input value={f.zip} onChange={e => sf("zip", e.target.value)} style={inp} placeholder="e.g. 85035" />
         </div>
       </div>
+
+      {/* Signal Filter Pills */}
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
-        {filters.map(f => (
-          <button key={f.key} onClick={() => setFilter(f.key)} style={{
+        {signals.map(s => (
+          <button key={s.key} onClick={() => setSignal(s.key)} style={{
             padding: "7px 14px", borderRadius: 20, border: "none", cursor: "pointer", fontSize: 12,
-            background: filter === f.key ? O : "#2a2a2a", color: filter === f.key ? "#000" : "#888", fontWeight: "bold"
-          }}>{f.label}</button>
+            background: signal === s.key ? O : "#2a2a2a", color: signal === s.key ? "#000" : "#888", fontWeight: "bold"
+          }}>{s.label}</button>
         ))}
       </div>
-      <button onClick={scan} style={btnStyle(true)}>{loading ? "⚙️ Scanning millions of properties..." : "🔍 Scan Market"}</button>
+
+      {/* Filters - Always Visible */}
+      <div style={{ ...dCard, marginBottom: 14 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 14 }}>
+          <div>
+            <label style={lbl}>Min Price ($)</label>
+            <input type="number" value={f.minPrice} onChange={e => sf("minPrice", +e.target.value)} style={inp} />
+          </div>
+          <div>
+            <label style={lbl}>Max Price ($)</label>
+            <input type="number" value={f.maxPrice} onChange={e => sf("maxPrice", +e.target.value)} style={inp} />
+          </div>
+          <div>
+            <label style={lbl}>Min Beds</label>
+            <select value={f.minBeds} onChange={e => sf("minBeds", +e.target.value)} style={inp}>
+              {[0,1,2,3,4,5].map(n => <option key={n} value={n}>{n === 0 ? "Any" : `${n}+`}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={lbl}>Max Beds</label>
+            <select value={f.maxBeds} onChange={e => sf("maxBeds", +e.target.value)} style={inp}>
+              {[1,2,3,4,5,6,7,8,9,10].map(n => <option key={n} value={n}>{n === 10 ? "Any" : n}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={lbl}>Min Baths</label>
+            <select value={f.minBaths} onChange={e => sf("minBaths", +e.target.value)} style={inp}>
+              {[0,1,2,3,4].map(n => <option key={n} value={n}>{n === 0 ? "Any" : `${n}+`}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={lbl}>Max Baths</label>
+            <select value={f.maxBaths} onChange={e => sf("maxBaths", +e.target.value)} style={inp}>
+              {[1,2,3,4,5,6,7,8,9,10].map(n => <option key={n} value={n}>{n === 10 ? "Any" : n}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={lbl}>Min Sq Ft</label>
+            <input type="number" value={f.minSqft} onChange={e => sf("minSqft", +e.target.value)} style={inp} placeholder="0" />
+          </div>
+          <div>
+            <label style={lbl}>Max Sq Ft</label>
+            <input type="number" value={f.maxSqft} onChange={e => sf("maxSqft", +e.target.value)} style={inp} placeholder="10000" />
+          </div>
+          <div>
+            <label style={lbl}>Property Type</label>
+            <select value={f.propType} onChange={e => sf("propType", e.target.value)} style={inp}>
+              {propTypes.map(t => <option key={t.key} value={t.key}>{t.label}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={lbl}>Condition</label>
+            <select value={f.condition} onChange={e => sf("condition", e.target.value)} style={inp}>
+              {conditions.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
+            </select>
+          </div>
+        </div>
+        <button onClick={resetFilters} style={{
+          marginTop: 14, background: "none", border: "1px solid #333",
+          color: "#666", borderRadius: 8, padding: "7px 16px",
+          cursor: "pointer", fontSize: 12, fontFamily: "inherit"
+        }}>↺ Reset All Filters</button>
+      </div>
+
+      <button onClick={scan} style={btnStyle(true)}>
+        {loading ? "⚙️ Scanning millions of properties..." : "🔍 Scan Market"}
+      </button>
+
       {results && !loading && (
         <div style={{ marginTop: 20 }}>
-          <div style={{ color: "#777", fontSize: 13, marginBottom: 12 }}>
-            Found <span style={{ color: O, fontWeight: "bold" }}>{results.length} opportunities</span> in {city}
-          </div>
-          {results.map((p, i) => {
-            const profit = p.arv - p.price - p.rehab;
-            const roi = Math.round((profit / (p.price + p.rehab)) * 100);
-            const sc = signalColors[p.type];
-            return (
-              <div key={i} style={{ ...dCard, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginBottom: 10, borderLeft: `3px solid ${sc}` }}>
-                <div style={{ flex: 2, minWidth: 180 }}>
-                  <div style={{ fontWeight: "bold", color: "white", marginBottom: 4 }}>{p.address}</div>
-                  <div style={{ color: "#555", fontSize: 12, marginBottom: 6 }}>{p.beds}bd/{p.baths}ba · {p.sqft.toLocaleString()} sqft · {p.dom} days on market</div>
-                  <Tag text={p.signal} color={sc} />
-                </div>
-                {[["ASK", `$${(p.price/1000).toFixed(0)}K`, "white"], ["ARV", `$${(p.arv/1000).toFixed(0)}K`, "#aaa"], ["PROFIT", `$${profit.toLocaleString()}`, "#22c55e"], ["ROI", `${roi}%`, O]].map(([label, val, color]) => (
-                  <div key={label} style={{ textAlign: "center", minWidth: 70 }}>
-                    <div style={{ fontSize: 9, color: "#555", marginBottom: 3, textTransform: "uppercase", letterSpacing: 0.8 }}>{label}</div>
-                    <div style={{ color, fontWeight: "bold", fontSize: 15 }}>{val}</div>
-                  </div>
-                ))}
-                <ScoreRing score={p.score} size={68} />
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
+            <div style={{ color: "#777", fontSize: 13 }}>
+              Found <span style={{ color: O, fontWeight: "bold" }}>{results.length} opportunities</span> in {f.city}
+              {f.zip && <span style={{ color: "#555" }}> · ZIP {f.zip}</span>}
+              <span style={{ color: "#555", fontSize: 11, marginLeft: 8 }}>Sorted by: Highest Opportunity Score</span>
+            </div>
+            {results.length > 0 && (
+              <div style={{ fontSize: 11, color: "#555" }}>
+                Avg Score: <span style={{ color: O, fontWeight: "bold" }}>
+                  {Math.round(results.reduce((a, p) => a + p.score, 0) / results.length)}
+                </span>
               </div>
-            );
-          })}
+            )}
+          </div>
+
+          {results.length === 0 ? (
+            <div style={{ ...dCard, textAlign: "center", padding: 40 }}>
+              <div style={{ fontSize: 32, marginBottom: 12 }}>🔍</div>
+              <div style={{ color: "#666", fontSize: 14 }}>No properties match your filters.</div>
+              <button onClick={resetFilters} style={{ ...btnStyle(false), marginTop: 14, fontSize: 13 }}>Reset Filters</button>
+            </div>
+          ) : (
+            results.map((p, i) => {
+              const profit = p.arv - p.price - p.rehab;
+              const roi = Math.round((profit / (p.price + p.rehab)) * 100);
+              const sc = signalColors[p.signal];
+              const cc = conditionColors[p.condition];
+              return (
+                <div key={i} style={{ ...dCard, display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginBottom: 10, borderLeft: `3px solid ${sc}` }}>
+                  {/* Rank */}
+                  <div style={{ width: 28, height: 28, borderRadius: "50%", background: i === 0 ? O : "#1e1e1e", color: i === 0 ? "#000" : "#555", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: "bold", flexShrink: 0 }}>
+                    {i + 1}
+                  </div>
+                  <div style={{ flex: 2, minWidth: 200 }}>
+                    <div style={{ fontWeight: "bold", color: "white", marginBottom: 3 }}>{p.address}</div>
+                    <div style={{ color: "#555", fontSize: 11, marginBottom: 5 }}>
+                      ZIP {p.zip} · {p.beds}bd/{p.baths}ba · {p.sqft.toLocaleString()} sqft · {p.dom} DOM
+                    </div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                      <Tag text={p.signalLabel} color={sc} />
+                      <Tag text={propTypes.find(t => t.key === p.propType)?.label.replace(/^[^\s]+\s/, "")} color="#a78bfa" />
+                      <span style={{ display: "inline-block", padding: "2px 10px", borderRadius: 20, background: cc + "22", border: `1px solid ${cc}55`, color: cc, fontSize: 11, fontWeight: "bold" }}>
+                        {p.condition.charAt(0).toUpperCase() + p.condition.slice(1)} Condition
+                      </span>
+                    </div>
+                  </div>
+                  {[
+                    ["ASK", `$${(p.price/1000).toFixed(0)}K`, "white"],
+                    ["ARV", `$${(p.arv/1000).toFixed(0)}K`, "#aaa"],
+                    ["PROFIT", `$${profit.toLocaleString()}`, "#22c55e"],
+                    ["ROI", `${roi}%`, O]
+                  ].map(([label, val, color]) => (
+                    <div key={label} style={{ textAlign: "center", minWidth: 65 }}>
+                      <div style={{ fontSize: 9, color: "#444", marginBottom: 3, textTransform: "uppercase", letterSpacing: 0.8 }}>{label}</div>
+                      <div style={{ color, fontWeight: "bold", fontSize: 14 }}>{val}</div>
+                    </div>
+                  ))}
+                  <ScoreRing score={p.score} size={68} />
+                </div>
+              );
+            })
+          )}
         </div>
       )}
     </div>
@@ -601,7 +756,7 @@ function DealRoomPanel() {
   return (
     <div>
       <p style={{ color: "#888", fontSize: 13, lineHeight: 1.7, marginBottom: 20 }}>
-        The <strong style={{ color: O }}>Investor Deal Room</strong> is where technology meets relationships. Members don't just analyze deals in isolation — they collaborate, partner, and fund each other's acquisitions. This is where the program becomes truly unique.
+        The <strong style={{ color: O }}>Investor Deal Room</strong> is where AI-powered deal discovery meets investor collaboration. Members share opportunities, post their deals, partner on acquisitions, and fund deals together. Because in real estate, your network truly becomes your net worth.
       </p>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 10, marginBottom: 22 }}>
         {[
@@ -693,9 +848,9 @@ export default function App() {
       <div style={{ background: "#0d0d0d", borderBottom: `2px solid ${GOLD}44`, padding: "18px 32px" }}>
         <div style={{ maxWidth: 1120, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <div>
-            <div style={{ fontSize: 10, color: O, textTransform: "uppercase", letterSpacing: 4, marginBottom: 4 }}>Program Overview</div>
+            <div style={{ fontSize: 10, color: O, textTransform: "uppercase", letterSpacing: 4, marginBottom: 4 }}>Deal Lab</div>
             <div style={{ fontSize: 22, fontWeight: "bold" }}>
-              <span style={{ color: "white" }}>THE (5) PILLARS OF THE </span>
+              <span style={{ color: "white" }}>THE </span>
               <span style={{ color: O }}>AI DEAL ENGINE</span>
             </div>
           </div>
