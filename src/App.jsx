@@ -473,7 +473,6 @@ function DealFinderPanel({ isMember, onUpgrade }) {
   });
   const sf = (k, v) => setF(p => ({ ...p, [k]: v }));
 
-  const ATTOM_KEY = "cfe270850a164787a803245f616e0226";
   const FREE_LIMIT = 3;
 
   const signalColors = {
@@ -547,15 +546,7 @@ function DealFinderPanel({ isMember, onUpgrade }) {
         if (v === "" || v === 0 || v === "0") params.delete(k);
       }
 
-      const res = await fetch(
-        `https://api.developer.attomdata.com/propertyapi/v1.0.0/property/detail?${params}`,
-        {
-          headers: {
-            "Accept": "application/json",
-            "apikey": ATTOM_KEY,
-          }
-        }
-      );
+      const res = await fetch(`/api/properties?${params}`);
 
       if (!res.ok) {
         const errText = await res.text();
