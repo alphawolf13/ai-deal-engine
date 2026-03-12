@@ -862,11 +862,6 @@ export default function App() {
   const { isSignedIn, isLoaded, user } = useUser();
   const { signOut } = useClerk();
 
-  // Auto-redirect to dashboard if already signed in
-  if (isLoaded && isSignedIn && (page === "landing" || page === "register" || page === "login")) {
-    setTimeout(() => setPage("dashboard"), 0);
-  }
-
   const clerkUser = (isLoaded && isSignedIn && user) ? {
     name: user.firstName || user.emailAddresses[0]?.emailAddress?.split("@")[0] || "Investor",
     email: user.emailAddresses[0]?.emailAddress,
@@ -878,16 +873,20 @@ export default function App() {
     setPage("landing");
   };
 
+  // Still loading Clerk
   if (!isLoaded) return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ color: "#F5A623", fontSize: 14 }}>⚙️ Loading...</div>
     </div>
   );
 
-  if (page === "landing") return <LandingPage onRegister={() => setPage("register")} onLogin={() => setPage("login")} />;
+  // Signed in — always show dashboard regardless of page state
+  if (isSignedIn && clerkUser) {
+    return <DealEngineDashboard user={clerkUser} onLogout={handleLogout} onUpgrade={() => {}} />;
+  }
+
+  // Not signed in — show landing or auth pages
   if (page === "register") return <AuthPage mode="register" onBack={() => setPage("landing")} />;
   if (page === "login") return <AuthPage mode="login" onBack={() => setPage("landing")} />;
-  if (page === "dashboard" && clerkUser) return <DealEngineDashboard user={clerkUser} onLogout={handleLogout} onUpgrade={() => {}} />;
-
   return <LandingPage onRegister={() => setPage("register")} onLogin={() => setPage("login")} />;
 }
