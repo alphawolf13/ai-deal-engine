@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useUser, useClerk, SignIn, SignUp } from "@clerk/react";
 
 /* ─── THEME ─── */
 const O = "#F5A623";
@@ -315,94 +316,53 @@ function LandingPage({ onRegister, onLogin }) {
 }
 
 /* ─────────────────────────────────────────────
-   AUTH PAGES
+   AUTH PAGES — powered by Clerk
 ───────────────────────────────────────────── */
-function AuthPage({ mode, onSuccess, onSwitch, onBack }) {
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
+const clerkAppearance = {
+  variables: {
+    colorPrimary: "#F5A623",
+    colorBackground: "#161616",
+    colorInputBackground: "#0d0d0d",
+    colorInputText: "#ffffff",
+    colorText: "#e8e8e8",
+    colorTextSecondary: "#666666",
+    colorNeutral: "#333333",
+    borderRadius: "8px",
+  },
+  elements: {
+    card: { background: "#161616", border: "1px solid #2a2a2a", boxShadow: "none" },
+    headerTitle: { color: "#ffffff", fontWeight: 900 },
+    headerSubtitle: { color: "#666" },
+    formButtonPrimary: { background: "#F5A623", color: "#000", fontWeight: "bold", "&:hover": { background: "#d4911e" } },
+    footerActionLink: { color: "#F5A623" },
+    identityPreviewText: { color: "#e8e8e8" },
+    formFieldInput: { background: "#0d0d0d", border: "1px solid #2a2a2a", color: "#fff" },
+    formFieldLabel: { color: "#666" },
+    dividerLine: { background: "#2a2a2a" },
+    dividerText: { color: "#444" },
+    socialButtonsBlockButton: { background: "#1a1a1a", border: "1px solid #2a2a2a", color: "#e8e8e8" },
+    socialButtonsBlockButtonText: { color: "#e8e8e8" },
+  }
+};
 
-  const handleSubmit = () => {
-    setError("");
-    if (mode === "register") {
-      if (!form.name.trim()) return setError("Please enter your name.");
-      if (!form.email.includes("@")) return setError("Please enter a valid email.");
-      if (form.password.length < 6) return setError("Password must be at least 6 characters.");
-    } else {
-      if (!form.email.includes("@")) return setError("Please enter your email.");
-      if (!form.password) return setError("Please enter your password.");
-    }
-    setLoading(true);
-    // TODO: Replace with Clerk auth — this is a mock for now
-    setTimeout(() => {
-      const user = { name: form.name || form.email.split("@")[0], email: form.email, plan: "free_trial" };
-      try { localStorage.setItem("aide_user", JSON.stringify(user)); } catch(e) {}
-      onSuccess(user);
-      setLoading(false);
-    }, 900);
-  };
-
+function AuthPage({ mode, onBack }) {
   return (
     <div style={{ minHeight: "100vh", background: DARK, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: "'DM Sans', 'Trebuchet MS', sans-serif" }}>
-      <div style={{ width: "100%", maxWidth: 420 }}>
-        {/* Logo */}
-        <div style={{ textAlign: "center", marginBottom: 40 }}>
-          <button onClick={onBack} style={{ background: "none", border: "none", color: O, cursor: "pointer", fontSize: 13, fontFamily: "inherit", marginBottom: 24, display: "block", margin: "0 auto 24px" }}>← Back to site</button>
+      <div style={{ width: "100%", maxWidth: 440 }}>
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <button onClick={onBack} style={{ background: "none", border: "none", color: O, cursor: "pointer", fontSize: 13, fontFamily: "inherit", marginBottom: 20, display: "block", margin: "0 auto 20px" }}>← Back to site</button>
           <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: 2, color: "white" }}>THE <span style={{ color: O }}>AI DEAL ENGINE</span></div>
         </div>
-
-        <div style={{ background: CARD2, border: `1px solid ${BORDER}`, borderRadius: 16, padding: "36px 32px" }}>
-          <div style={{ textAlign: "center", marginBottom: 28 }}>
-            <div style={{ fontSize: 22, fontWeight: 900, color: "white", marginBottom: 6 }}>
-              {mode === "register" ? "Start Your Free Trial" : "Welcome Back"}
-            </div>
-            <div style={{ fontSize: 13, color: "#555" }}>
-              {mode === "register" ? "Create your account — no credit card needed" : "Sign in to your account"}
-            </div>
+        {mode === "register" && (
+          <div style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 10, padding: "12px 16px", marginBottom: 20, fontSize: 12, color: "#666", lineHeight: 1.8 }}>
+            <span style={{ color: O, fontWeight: "bold" }}>Free trial includes: </span>
+            ✓ Deal Analyzer (1 free) &nbsp;·&nbsp; ✓ Opportunity Score &nbsp;·&nbsp; ✓ Deal Finder preview &nbsp;·&nbsp; ✓ Cold SMS script
           </div>
-
-          {mode === "register" && (
-            <div style={{ marginBottom: 16 }}>
-              <label style={lbl}>Your Name</label>
-              <input value={form.name} onChange={e => set("name", e.target.value)} style={inp} placeholder="Kris Alfaro" onKeyDown={e => e.key==="Enter" && handleSubmit()} />
-            </div>
-          )}
-          <div style={{ marginBottom: 16 }}>
-            <label style={lbl}>Email Address</label>
-            <input type="email" value={form.email} onChange={e => set("email", e.target.value)} style={inp} placeholder="you@email.com" onKeyDown={e => e.key==="Enter" && handleSubmit()} />
-          </div>
-          <div style={{ marginBottom: 24 }}>
-            <label style={lbl}>Password</label>
-            <input type="password" value={form.password} onChange={e => set("password", e.target.value)} style={inp} placeholder={mode==="register"?"Create a password (6+ chars)":"Your password"} onKeyDown={e => e.key==="Enter" && handleSubmit()} />
-          </div>
-
-          {error && <div style={{ background: "#ef444418", border: "1px solid #ef444444", borderRadius: 8, padding: "10px 14px", color: "#f87171", fontSize: 13, marginBottom: 18 }}>{error}</div>}
-
-          <button onClick={handleSubmit} disabled={loading} style={{ ...btn(true), opacity: loading ? 0.7 : 1 }}>
-            {loading ? "⚙️ Setting up your account..." : mode === "register" ? "Create Free Account →" : "Sign In →"}
-          </button>
-
-          {mode === "register" && (
-            <div style={{ marginTop: 16, padding: "14px", background: "#0d0d0d", borderRadius: 8, border: "1px solid #1a1a1a" }}>
-              <div style={{ fontSize: 12, color: "#555", lineHeight: 1.7 }}>
-                <span style={{ color: O, fontWeight: "bold" }}>Free trial includes:</span><br/>
-                ✓ AI Deal Analyzer (1 free analysis)<br/>
-                ✓ Opportunity Score (unlimited)<br/>
-                ✓ Deal Finder preview (top 3 results)<br/>
-                ✓ Cold SMS outreach script
-              </div>
-            </div>
-          )}
-
-          <div style={{ textAlign: "center", marginTop: 20, fontSize: 13, color: "#555" }}>
-            {mode === "register" ? (
-              <>Already have an account? <button onClick={onSwitch} style={{ background: "none", border: "none", color: O, cursor: "pointer", fontSize: 13, fontFamily: "inherit" }}>Sign in</button></>
-            ) : (
-              <>Don't have an account? <button onClick={onSwitch} style={{ background: "none", border: "none", color: O, cursor: "pointer", fontSize: 13, fontFamily: "inherit" }}>Start free trial</button></>
-            )}
-          </div>
-        </div>
+        )}
+        {mode === "register"
+          ? <SignUp appearance={clerkAppearance} redirectUrl="/" signInUrl="/sign-in" />
+          : <SignIn appearance={clerkAppearance} redirectUrl="/" signUpUrl="/sign-up" />
+        }
       </div>
     </div>
   );
@@ -898,26 +858,36 @@ if (typeof document !== "undefined") {
 }
 
 export default function App() {
-  const [page, setPage] = useState("landing"); // landing | register | login | dashboard
-  const [user, setUser] = useState(null);
+  const [page, setPage] = useState("landing");
+  const { isSignedIn, isLoaded, user } = useUser();
+  const { signOut } = useClerk();
 
-  // Restore session on load
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("aide_user");
-      if (saved) { const u = JSON.parse(saved); setUser(u); setPage("dashboard"); }
-    } catch(e) {}
-  }, []);
+  // Auto-redirect to dashboard if already signed in
+  if (isLoaded && isSignedIn && (page === "landing" || page === "register" || page === "login")) {
+    setTimeout(() => setPage("dashboard"), 0);
+  }
 
-  const handleAuthSuccess = (u) => { setUser(u); setPage("dashboard"); };
+  const clerkUser = (isLoaded && isSignedIn && user) ? {
+    name: user.firstName || user.emailAddresses[0]?.emailAddress?.split("@")[0] || "Investor",
+    email: user.emailAddresses[0]?.emailAddress,
+    plan: "free_trial"
+  } : null;
+
   const handleLogout = () => {
-    try { localStorage.removeItem("aide_user"); } catch(e) {}
-    setUser(null); setPage("landing");
+    signOut();
+    setPage("landing");
   };
 
+  if (!isLoaded) return (
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ color: "#F5A623", fontSize: 14 }}>⚙️ Loading...</div>
+    </div>
+  );
+
   if (page === "landing") return <LandingPage onRegister={() => setPage("register")} onLogin={() => setPage("login")} />;
-  if (page === "register") return <AuthPage mode="register" onSuccess={handleAuthSuccess} onSwitch={() => setPage("login")} onBack={() => setPage("landing")} />;
-  if (page === "login") return <AuthPage mode="login" onSuccess={handleAuthSuccess} onSwitch={() => setPage("register")} onBack={() => setPage("landing")} />;
-  if (page === "dashboard") return <DealEngineDashboard user={user} onLogout={handleLogout} onUpgrade={() => {}} />;
-  return null;
+  if (page === "register") return <AuthPage mode="register" onBack={() => setPage("landing")} />;
+  if (page === "login") return <AuthPage mode="login" onBack={() => setPage("landing")} />;
+  if (page === "dashboard" && clerkUser) return <DealEngineDashboard user={clerkUser} onLogout={handleLogout} onUpgrade={() => {}} />;
+
+  return <LandingPage onRegister={() => setPage("register")} onLogin={() => setPage("login")} />;
 }
