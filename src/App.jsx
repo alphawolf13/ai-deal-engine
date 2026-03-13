@@ -564,32 +564,37 @@ function DealFinderPanel({ isMember, onUpgrade }) {
 
       // Process and enrich properties
       const processed = properties
-        .filter(p => p.address?.line1)
+        .filter(p => p.address?.oneLine || p.address?.line1)
         .map(p => {
-          const avm = p.avm?.amount?.value || 0;
-          const beds = p.building?.rooms?.beds || 0;
-          const baths = p.building?.rooms?.bathsTotal || 0;
-          const sqft = p.building?.size?.bldgSize || 0;
-          const askPrice = avm > 0 ? Math.round(avm * 0.82) : 0;
+          // Snapshot returns different field paths than detail
+          const avm = p.avm?.amount?.value || p.avm?.value || 0;
+          const beds = p.building?.rooms?.beds || p.building?.rooms?.bedsTotal || 0;
+          const baths = p.building?.rooms?.bathsTotal || p.building?.rooms?.baths || 0;
+          const sqft = p.building?.size?.bldgSize || p.building?.size?.livingSize || 0;
+          const assessedVal = p.assessment?.assessed?.assdTtlValue || 0;
+          const estValue = avm > 0 ? avm : assessedVal * 1.1;
+          const askPrice = estValue > 0 ? Math.round(estValue * 0.82) : 0;
           const rehab = 40000;
-          const profit = avm - askPrice - rehab;
-          const roi = avm > 0 ? Math.round((profit / (askPrice + rehab)) * 100) : 0;
-          const { signal, label } = assignSignal(p);
-          const score = calcScore(p, avm);
-          const propTypeRaw = p.summary?.proptype || "SFR";
+          const profit = estValue > 0 ? Math.round(estValue - askPrice - rehab) : 0;
+          const roi = (askPrice + rehab) > 0 ? Math.round((profit / (askPrice + rehab)) * 100) : 0;
+          const { signal: sig, label } = assignSignal(p);
+          const score = calcScore(p, estValue);
+          const propTypeRaw = p.summary?.proptype || p.summary?.propertyType || "SFR";
+          const addressLine = p.address?.line1 || p.address?.oneLine?.split(",")[0] || "Address N/A";
+          const cityName = p.address?.locality || p.address?.city || f.city;
+          const stateName = p.address?.countrySubd || p.address?.state || f.state;
+          const zipCode = p.address?.postal1 || p.address?.zip || "";
 
           // Filter by price range
           if (askPrice > 0 && (askPrice < f.minPrice || askPrice > f.maxPrice)) return null;
-          // Filter by signal
-          if (signal !== "all" && f.signal !== "all" && signal !== f.signal) return null;
 
           return {
-            address: p.address?.line1,
-            city: p.address?.locality,
-            state: p.address?.countrySubd,
-            zip: p.address?.postal1,
+            address: addressLine,
+            city: cityName,
+            state: stateName,
+            zip: zipCode,
             price: askPrice,
-            arv: avm,
+            arv: estValue,
             rehab,
             profit,
             roi,
@@ -597,7 +602,7 @@ function DealFinderPanel({ isMember, onUpgrade }) {
             beds,
             baths,
             sqft,
-            signal,
+            signal: sig,
             signalLabel: label,
             propType: propTypeRaw,
             dom: Math.floor(Math.random() * 90) + 5,

@@ -19,7 +19,7 @@ export default async function handler(req, res) {
 
   try {
     const attomRes = await fetch(
-      `https://api.developer.attomdata.com/propertyapi/v1.0.0/property/detail?${params}`,
+      `https://api.developer.attomdata.com/propertyapi/v1.0.0/property/snapshot?${params}`,
       {
         headers: {
           Accept: "application/json",
