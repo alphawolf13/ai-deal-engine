@@ -1,6 +1,6 @@
-const https = require("https");
+import https from "https";
 
-module.exports = function handler(req, res) {
+export default function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
 
   if (req.method === "OPTIONS") {
@@ -30,8 +30,7 @@ module.exports = function handler(req, res) {
     r.on("data", function(d) { body += d; });
     r.on("end", function() {
       try {
-        var parsed = JSON.parse(body);
-        res.status(r.statusCode).json(parsed);
+        res.status(r.statusCode).json(JSON.parse(body));
       } catch(e) {
         res.status(500).json({ error: "parse error", body: body.slice(0, 200) });
       }
@@ -39,4 +38,4 @@ module.exports = function handler(req, res) {
   }).on("error", function(e) {
     res.status(500).json({ error: e.message });
   });
-};
+}
