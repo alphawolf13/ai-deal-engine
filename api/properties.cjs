@@ -4,39 +4,39 @@ module.exports = function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
 
   if (req.method === "OPTIONS") {
-    return res.status(200).end();
+    res.status(200).end();
+    return;
   }
 
-  const key = process.env.VITE_ATTOM_KEY || "";
-  const city = (req.query.city || "Phoenix").replace(/ /g, "%20");
-  const state = req.query.state || "AZ";
-  const url = `/propertyapi/v1.0.0/property/snapshot?city=${city}&state=${state}&pagesize=20&page=1`;
+  const key = process.env.VITE_ATTOM_KEY;
+  if (!key) {
+    res.status(500).json({ error: "No API key" });
+    return;
+  }
 
-  const options = {
+  const city = encodeURIComponent(req.query.city || "Phoenix");
+  const state = encodeURIComponent(req.query.state || "AZ");
+  const path = "/propertyapi/v1.0.0/property/snapshot?city=" + city + "&state=" + state + "&pagesize=20&page=1";
+
+  https.get({
     hostname: "api.developer.attomdata.com",
-    path: url,
-    method: "GET",
+    path: path,
     headers: {
       "Accept": "application/json",
-      "apikey": key,
-    },
-  };
-
-  const req2 = https.request(options, function(resp) {
+      "apikey": key
+    }
+  }, function(r) {
     var body = "";
-    resp.on("data", function(c) { body += c; });
-    resp.on("end", function() {
+    r.on("data", function(d) { body += d; });
+    r.on("end", function() {
       try {
-        res.status(resp.statusCode).json(JSON.parse(body));
+        var parsed = JSON.parse(body);
+        res.status(r.statusCode).json(parsed);
       } catch(e) {
-        res.status(500).json({ error: "parse error", raw: body.slice(0, 300) });
+        res.status(500).json({ error: "parse error", body: body.slice(0, 200) });
       }
     });
-  });
-
-  req2.on("error", function(e) {
+  }).on("error", function(e) {
     res.status(500).json({ error: e.message });
   });
-
-  req2.end();
 };
