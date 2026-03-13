@@ -3,7 +3,7 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "functions": {
-    "api/properties.js": {
+    "api/properties.cjs": {
       "runtime": "nodejs18.x"
     }
   },
