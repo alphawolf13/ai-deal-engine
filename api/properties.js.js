@@ -1,6 +1,4 @@
-import https from "https";
-
-export default function handler(req, res) {
+export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
 
   if (req.method === "OPTIONS") {
@@ -16,26 +14,15 @@ export default function handler(req, res) {
 
   const city = encodeURIComponent(req.query.city || "Phoenix");
   const state = encodeURIComponent(req.query.state || "AZ");
-  const path = "/propertyapi/v1.0.0/property/snapshot?city=" + city + "&state=" + state + "&pagesize=20&page=1";
+  const url = `https://api.developer.attomdata.com/propertyapi/v1.0.0/property/snapshot?city=${city}&state=${state}&pagesize=20&page=1`;
 
-  https.get({
-    hostname: "api.developer.attomdata.com",
-    path: path,
+  const response = await fetch(url, {
     headers: {
       "Accept": "application/json",
       "apikey": key
     }
-  }, function(r) {
-    var body = "";
-    r.on("data", function(d) { body += d; });
-    r.on("end", function() {
-      try {
-        res.status(r.statusCode).json(JSON.parse(body));
-      } catch(e) {
-        res.status(500).json({ error: "parse error", body: body.slice(0, 200) });
-      }
-    });
-  }).on("error", function(e) {
-    res.status(500).json({ error: e.message });
   });
+
+  const data = await response.json();
+  res.status(response.status).json(data);
 }
