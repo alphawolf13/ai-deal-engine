@@ -12,9 +12,8 @@ export default async function handler(req, res) {
     return;
   }
 
-  const city = encodeURIComponent(req.query.city || "Phoenix");
-  const state = encodeURIComponent(req.query.state || "AZ");
-  const url = `https://api.gateway.attomdata.com/propertyapi/v1.0.0/property/snapshot?city=${city}&stateOrProvince=${state}&pagesize=20&page=1`;
+  const zip = req.query.zip || "85001";
+  const url = `https://api.gateway.attomdata.com/propertyapi/v1.0.0/property/snapshot?postalcode=${zip}&pagesize=20&page=1`;
 
   const response = await fetch(url, {
     headers: {
