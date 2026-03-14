@@ -12,7 +12,8 @@ export default async function handler(req, res) {
     return;
   }
 
-  const zip = req.query.zip || "85001";
+  // Accept zip, postalCode, or postal1 — all mean the same thing
+  const zip = req.query.zip || req.query.postalCode || req.query.postal1 || "85254";
   const url = `https://api.gateway.attomdata.com/propertyapi/v1.0.0/property/snapshot?postalcode=${zip}&pagesize=20&page=1`;
 
   const response = await fetch(url, {
