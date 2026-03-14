@@ -14,7 +14,7 @@ export default async function handler(req, res) {
 
   const city = encodeURIComponent(req.query.city || "Phoenix");
   const state = encodeURIComponent(req.query.state || "AZ");
-  const url = `https://api.developer.attomdata.com/propertyapi/v1.0.0/property/snapshot?city=${city}&state=${state}&pagesize=20&page=1`;
+  const url = `https://api.gateway.attomdata.com/propertyapi/v1.0.0/property/snapshot?city=${city}&state=${state}&pagesize=20&page=1`;
 
   const response = await fetch(url, {
     headers: {
