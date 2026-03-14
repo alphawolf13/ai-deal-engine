@@ -6,7 +6,7 @@ export default async function handler(req, res) {
     return;
   }
 
-  const key = process.env.VITE_ATTOM_KEY;
+  const key = process.env.ATTOM_KEY;
   if (!key) {
     res.status(500).json({ error: "No API key" });
     return;
